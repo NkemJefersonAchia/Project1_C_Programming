@@ -1,14 +1,17 @@
-/* Mobile Money transaction system for an agent  */
+/* Mobile Money transaction system for an agent. */
 #include <stdio.h>
+#include <math.h>
 
-/* Discards invalid characters left on the input line. */
-void clear_input(void)
+/* Discards the rest of the current input line. */
+int clear_input(void)
 {
-    int c;
+    int c, leftover = 0;
 
-    /* Remove the rest of the invalid line. */
     while ((c = getchar()) != '\n' && c != EOF)
-        ;
+        if (c != ' ' && c != '\t')
+            leftover = 1;
+
+    return leftover;
 }
 
 /* Reads and validates a positive transaction amount. */
@@ -16,13 +19,15 @@ int get_amount(const char *prompt, double *amount)
 {
     printf("%s", prompt);
 
-    if (scanf("%lf", amount) != 1) {
-        clear_input();
+    int read_ok = (scanf("%lf", amount) == 1);
+
+    /* Reject letters or trailing characters. */
+    if (clear_input() || !read_ok) {
         printf("Invalid amount entered.\n");
         return 0;
     }
 
-    if (*amount <= 0) {
+    if (!(*amount > 0) || !isfinite(*amount)) {
         printf("Transaction rejected: amount must be greater than zero.\n");
         return 0;
     }
@@ -55,9 +60,15 @@ int main(void)
     while (1) {
         /* Reject letters and other non-numeric choices. */
         printf("\nEnter choice: ");
-        if (scanf("%d", &choice) != 1) {
+        int result = scanf("%d", &choice);
+
+        if (result == EOF) {
+            printf("\nInput closed. System terminated.\n");
+            break;
+        }
+
+        if (clear_input() || result != 1) {
             printf("Invalid input. Please enter a number from 1 to 5.\n");
-            clear_input();
             continue;
         }
 
@@ -76,7 +87,7 @@ int main(void)
             balance += amount;
             deposits++;
             printf("Deposit successful.\n");
-            printf("Current balance: %.0f RWF\n", balance);
+            printf("Current balance: %.2f RWF\n", balance);
             break;
 
         case 2:
@@ -91,11 +102,11 @@ int main(void)
             balance -= amount;
             withdrawals++;
             printf("Withdrawal successful.\n");
-            printf("Current balance: %.0f RWF\n", balance);
+            printf("Current balance: %.2f RWF\n", balance);
             break;
 
         case 3:
-            printf("Current balance: %.0f RWF\n", balance);
+            printf("Current balance: %.2f RWF\n", balance);
             break;
 
         case 4:
