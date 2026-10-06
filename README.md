@@ -82,3 +82,7 @@ documented rather than just claimed.
 
 Each question's README also opens with a table mapping every requirement in
 the question statement to the exact place in the code where it is handled.
+
+The programs are deliberately short. Each function does one job, takes what it
+needs as parameters and returns a value, and comments are only there where the
+reason for a line isn't obvious from the line itself.

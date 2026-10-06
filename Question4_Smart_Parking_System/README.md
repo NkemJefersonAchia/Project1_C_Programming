@@ -111,7 +111,7 @@ Required data flow: **Ultrasonic Sensor → Arduino Uno → Decision/Processing 
 | An appropriate distance threshold is defined | `const int THRESHOLD_CM = 50;` |
 | Program reads the ultrasonic sensor | `readDistance()` sends the 10 µs trigger and calls `pulseIn()` |
 | Program calculates the measured distance | `duration * 0.034 / 2` converts the echo time to centimetres |
-| Program applies the occupancy condition | `if (distanceCm > 0 && distanceCm <= THRESHOLD_CM)` |
+| Program applies the occupancy condition | `if (distance > 0 && distance <= THRESHOLD_CM)` |
 | Program controls the LEDs and buzzer accordingly | `digitalWrite()` on both LEDs plus `tone()` / `noTone()` in both branches |
 | Demonstrated by changing the simulated distance | The four test cases below, driven by dragging the sensor's object marker |
 

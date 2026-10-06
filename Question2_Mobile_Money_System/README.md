@@ -1,53 +1,44 @@
-# Question 2 — Mobile-Money Transaction System
+# Question 2 — Transaction Processing and Control Flow
 
 **Points:** 4
 
 A transaction processing system for a mobile-money agent. The agent keeps
 processing deposits, withdrawals and balance checks in one session until they
-choose Exit. Every amount is checked before it touches the balance, and
-anything that isn't a valid number gets cleared out of the input so the program
-doesn't get stuck.
+choose Exit. Every amount is validated before it touches the balance.
 
-## Deliverable 1 — Source code
+## Deliverable 1 — Complete C source code
 
 [`q2_mobile_money.c`](q2_mobile_money.c)
 
-### How the requirements are met
+Two small helpers keep `main()` readable: `clear_input()` empties leftover
+characters after a bad entry, and `get_amount()` prompts for an amount and
+rejects anything that is not a positive number — so the deposit and withdrawal
+cases don't repeat the same checks.
 
 | Requirement | Where it's done |
 |---|---|
 | Deposit — add an amount to the balance | `case 1` |
-| Withdrawal — only if positive and funds are sufficient | `case 2`, guarded by `amount <= 0` and `amount > balance` |
+| Withdrawal — only if positive and funds are sufficient | `case 2`, guarded by `get_amount()` and `amount > balance` |
 | Balance inquiry | `case 3` |
-| Transaction summary — count of successful deposits and withdrawals | `case 4`, using the `deposits` and `withdrawals` counters |
+| Transaction summary — successful deposits and withdrawals | `case 4`, using the `deposits` and `withdrawals` counters |
 | Exit — terminate the program | `choice == 5`, checked before the `switch` |
-| Appropriate data types for amounts, balances, counts, choices | `double balance`, `double amount`, `int deposits`, `int withdrawals`, `int choice` |
+| Appropriate data types | `double balance`, `double amount`, `int deposits`, `int withdrawals`, `int choice` |
 | `switch` or `if-else` to process the operation | `switch (choice)` with a `default` case |
 | Loop for multiple transactions without restarting | `while (1)` around the whole menu |
 | `continue` to return to the menu on invalid input | Every rejection path — bad number, non-positive amount, insufficient funds |
 | `break` to terminate a loop or control-flow structure | Both: ends each `switch` case, and exits the `while` loop on Exit |
-| Prevent negative amounts and over-withdrawal | The two `if` guards in cases 1 and 2 |
+| Prevent negative amounts and over-withdrawal | `get_amount()` plus the balance check in `case 2` |
 | Clear messages for success and failure | `"... successful."` and `"Transaction rejected: ..."` |
 | Run until the agent explicitly selects Exit | Only `choice == 5` breaks the loop |
 
 ### Build and run
 
 ```bash
-gcc -Wall -Wextra q2_mobile_money.c -o q2
+gcc -Wall -Wextra -std=c11 -o q2 q2_mobile_money.c
 ./q2
 ```
 
-Compiles with zero warnings under `-Wall -Wextra`.
-
-### Menu
-
-```
-1. Deposit
-2. Withdraw
-3. Check Balance
-4. Transaction Summary
-5. Exit
-```
+Compiles with **zero warnings** under `-Wall -Wextra`.
 
 ## Deliverable 2 — Sample input/output
 
@@ -71,11 +62,11 @@ Current balance: 50000 RWF
 
 Enter choice: 2
 Enter withdrawal amount: 70000
-Transaction rejected: Insufficient balance.
+Transaction rejected: insufficient balance.
 
 Enter choice: 2
 Enter withdrawal amount: -500
-Transaction rejected: Amount must be greater than zero.
+Transaction rejected: amount must be greater than zero.
 
 Enter choice: abc
 Invalid input. Please enter a number from 1 to 5.
@@ -91,7 +82,6 @@ Current balance: 30000 RWF
 Enter choice: 4
 Successful deposits   : 1
 Successful withdrawals: 1
-Total transactions    : 2
 
 Enter choice: 9
 Invalid choice. Please select 1 to 5.
@@ -100,11 +90,10 @@ Enter choice: 5
 System terminated.
 ```
 
-Notice the summary reports 1 deposit and 1 withdrawal, not 1 and 3 — the three
-rejected withdrawals never reached the counter. That's the `continue` doing its
-job.
+The summary reports 1 deposit and 1 withdrawal, not 1 and 3 — the two rejected
+withdrawals never reached the counter. That is the `continue` doing its job.
 
-To reproduce this run without typing it:
+To reproduce the run without typing:
 
 ```bash
 printf '1\n50000\n2\n70000\n2\n-500\nabc\n2\n20000\n3\n4\n9\n5\n' | ./q2
@@ -115,60 +104,60 @@ printf '1\n50000\n2\n70000\n2\n-500\nabc\n2\n20000\n3\n4\n9\n5\n' | ./q2
 | Input | Expected | Result |
 |-------|----------|--------|
 | Withdraw exactly the full balance (5000 from 5000) | Allowed, balance goes to 0 | Pass |
-| Deposit of `0` | Rejected — amount must be greater than zero | Pass |
-| Withdrawal larger than the balance | Rejected — insufficient balance | Pass |
+| Deposit of `0` | Rejected | Pass |
+| Withdrawal larger than the balance | Rejected | Pass |
 | Negative amount on deposit or withdrawal | Rejected | Pass |
-| Letters (`abc`) at the choice prompt | Rejected, input buffer cleared, menu reappears | Pass |
+| Letters at the choice prompt | Rejected, buffer cleared, menu reappears | Pass |
+| Letters at the amount prompt | Rejected, buffer cleared, no infinite loop | Pass |
 | Menu choice `0`, `-3` or `9` | Rejected by the `default` case | Pass |
 
 The "exactly the full balance" case matters because the check is
-`amount > balance`, not `>=`. Withdrawing your whole balance is a legitimate
-transaction and the program correctly allows it.
+`amount > balance`, not `>=`. Withdrawing your whole balance is legitimate and
+the program allows it.
 
-## Deliverable 3 — How the control flow works
+## Deliverable 3 — How the program uses conditionals, loops, break and continue
 
 ### Data types
 
 `balance` and `amount` are `double` so the program can hold large values and
-won't break if someone types `1500.50`. `choice`, `deposits` and `withdrawals`
-are plain `int`, since they only ever hold small whole numbers. Balances are
-printed with `%.0f` because Rwandan Francs aren't used in fractions in
-practice.
+accept amounts like `1500.50`. `choice`, `deposits` and `withdrawals` are
+`int`, since they only hold small whole numbers. Balances print with `%.0f`
+because Rwandan Francs aren't used in fractions.
 
 ### Conditionals
 
-A `switch` picks the operation based on the menu choice, and the `default` case
-catches numbers outside 1 to 5. Inside the deposit and withdrawal cases, `if`
-statements reject amounts that are zero or negative, and withdrawals also get
-checked against the current balance. The balance and counters are only updated
-*after* every check passes.
+A `switch` picks the operation from the menu choice, and its `default` case
+catches anything outside 1 to 5. Inside `get_amount()` an `if` rejects amounts
+that are zero or negative, and `case 2` adds a second `if` comparing the amount
+against the current balance. The balance and counters are only updated *after*
+every check passes.
 
 ### The loop
 
 A `while (1)` wraps the whole menu so the agent can run as many transactions as
-they like without restarting the program. The only way out is the Exit branch,
-so the session continues until the agent explicitly chooses it.
+they like without restarting. The only way out is the Exit branch, so the
+session continues until the agent explicitly chooses it.
 
 ### `continue`
 
-Whenever input is bad — letters typed, negative amount, not enough money — the
-program prints why and hits `continue`. That skips the rest of the loop body
-and jumps straight back to "Enter choice". So a rejected transaction can never
-accidentally change the balance or bump the counters.
+Whenever input is bad — letters typed, a non-positive amount, insufficient
+funds — the program explains why and hits `continue`. That skips the rest of
+the loop body and jumps straight back to "Enter choice", so a rejected
+transaction can never change the balance or bump a counter.
 
 When `scanf` fails, `clear_input()` empties the leftover characters first.
-Without that, `scanf` would leave the bad text sitting in the buffer and read
-the same characters again on the next pass, looping forever.
+Without it, `scanf` would leave the bad text in the buffer and read the same
+characters again on the next pass, looping forever.
 
 ### `break`
 
-It's used in two different ways here:
+It appears in two different roles:
 
-- **Inside the `switch`**, each `break` just ends that case so execution
-  doesn't fall through into the next one.
-- **For Exit**, the program checks `choice == 5` *before* the switch and calls
-  `break` there, which leaves the `while` loop completely and ends the program.
+- **Inside the `switch`**, each `break` ends that case so execution doesn't
+  fall through into the next one.
+- **For Exit**, `choice == 5` is checked *before* the switch and `break` there
+  leaves the `while` loop entirely, ending the program.
 
-That placement is deliberate. If the Exit `break` were inside the `switch`, it
-would only exit the switch and the loop would keep going — a classic bug, and
-the program would never terminate.
+That placement is deliberate. If the Exit `break` sat inside the `switch` it
+would only exit the switch, the loop would keep going, and the program would
+never terminate.

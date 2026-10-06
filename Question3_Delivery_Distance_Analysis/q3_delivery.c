@@ -2,56 +2,49 @@
 
 #define MAX_ROUTES 100
 
-int total_distance(int d[], int n)
+int total_distance(int distances[], int n)
 {
     int sum = 0;
 
     for (int i = 0; i < n; i++)
-        sum += d[i];
+        sum += distances[i];
 
     return sum;
 }
 
-/* reuses total_distance instead of looping again */
-float average_distance(int d[], int n)
+float average_distance(int distances[], int n)
 {
-    if (n == 0)
-        return 0;
-
-    return (float)total_distance(d, n) / n;
+    return (float)total_distance(distances, n) / n;
 }
 
-int longest_route(int d[], int n)
+int longest_route(int distances[], int n)
 {
-    int longest = d[0];
+    int longest = distances[0];
 
-    for (int i = 1; i < n; i++) {
-        if (d[i] > longest)
-            longest = d[i];
-    }
+    for (int i = 1; i < n; i++)
+        if (distances[i] > longest)
+            longest = distances[i];
 
     return longest;
 }
 
-int count_above(int d[], int n, int limit)
+int count_above(int distances[], int n, int limit)
 {
     int count = 0;
 
-    for (int i = 0; i < n; i++) {
-        if (d[i] > limit)
+    for (int i = 0; i < n; i++)
+        if (distances[i] > limit)
             count++;
-    }
 
     return count;
 }
 
-/* sum of the first n elements, done recursively */
-int recursive_sum(int d[], int n)
+int recursive_sum(int distances[], int n)
 {
-    if (n == 0)                 /* base case: nothing left to add */
+    if (n == 0)
         return 0;
 
-    return d[n - 1] + recursive_sum(d, n - 1);
+    return distances[n - 1] + recursive_sum(distances, n - 1);
 }
 
 int main(void)
@@ -62,7 +55,7 @@ int main(void)
     printf("Number of routes: ");
     scanf("%d", &n);
 
-    if (n <= 0 || n > MAX_ROUTES) {
+    if (n < 1 || n > MAX_ROUTES) {
         printf("Please enter between 1 and %d routes.\n", MAX_ROUTES);
         return 1;
     }
@@ -82,12 +75,10 @@ int main(void)
 
     printf("\nRecursive sum: %d km\n", recursive_sum(distances, n));
 
-    if (recursive_sum(distances, n) == total_distance(distances, n))
-        printf("Check: recursive and loop totals match.\n");
-
-    /* same function, different argument: routes above the average */
-    int avg = (int)average_distance(distances, n);
-    printf("\nRoutes above average (%d km): %d\n", avg, count_above(distances, n, avg));
+    /* count_above() reused, this time with the average as the limit */
+    int average = (int)average_distance(distances, n);
+    printf("\nRoutes above average (%d km): %d\n", average,
+           count_above(distances, n, average));
 
     return 0;
 }

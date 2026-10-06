@@ -1,21 +1,36 @@
 #include <stdio.h>
 
-/* throw away whatever is left on the input line (e.g. letters typed by mistake) */
+/* discard leftover characters so a bad entry isn't read again */
 void clear_input(void)
 {
     int c;
-
     while ((c = getchar()) != '\n' && c != EOF)
         ;
 }
 
+/* prompt for an amount and reject anything that isn't a positive number */
+int get_amount(const char *prompt, double *amount)
+{
+    printf("%s", prompt);
+
+    if (scanf("%lf", amount) != 1) {
+        clear_input();
+        printf("Invalid amount entered.\n");
+        return 0;
+    }
+
+    if (*amount <= 0) {
+        printf("Transaction rejected: amount must be greater than zero.\n");
+        return 0;
+    }
+
+    return 1;
+}
+
 int main(void)
 {
-    double balance = 0.0;
-    double amount;
-    int choice;
-    int deposits = 0;
-    int withdrawals = 0;
+    double balance = 0, amount;
+    int choice, deposits = 0, withdrawals = 0;
 
     printf("===== MOBILE MONEY TRANSACTION SYSTEM =====\n\n");
     printf("1. Deposit\n");
@@ -30,26 +45,18 @@ int main(void)
         if (scanf("%d", &choice) != 1) {
             printf("Invalid input. Please enter a number from 1 to 5.\n");
             clear_input();
-            continue;               /* back to the menu */
+            continue;
         }
 
         if (choice == 5) {
             printf("System terminated.\n");
-            break;                  /* leaves the while loop */
+            break;
         }
 
         switch (choice) {
         case 1:
-            printf("Enter deposit amount: ");
-            if (scanf("%lf", &amount) != 1) {
-                printf("Invalid amount entered.\n");
-                clear_input();
+            if (!get_amount("Enter deposit amount: ", &amount))
                 continue;
-            }
-            if (amount <= 0) {
-                printf("Transaction rejected: Amount must be greater than zero.\n");
-                continue;
-            }
             balance += amount;
             deposits++;
             printf("Deposit successful.\n");
@@ -57,18 +64,10 @@ int main(void)
             break;
 
         case 2:
-            printf("Enter withdrawal amount: ");
-            if (scanf("%lf", &amount) != 1) {
-                printf("Invalid amount entered.\n");
-                clear_input();
+            if (!get_amount("Enter withdrawal amount: ", &amount))
                 continue;
-            }
-            if (amount <= 0) {
-                printf("Transaction rejected: Amount must be greater than zero.\n");
-                continue;
-            }
             if (amount > balance) {
-                printf("Transaction rejected: Insufficient balance.\n");
+                printf("Transaction rejected: insufficient balance.\n");
                 continue;
             }
             balance -= amount;
@@ -84,7 +83,6 @@ int main(void)
         case 4:
             printf("Successful deposits   : %d\n", deposits);
             printf("Successful withdrawals: %d\n", withdrawals);
-            printf("Total transactions    : %d\n", deposits + withdrawals);
             break;
 
         default:
