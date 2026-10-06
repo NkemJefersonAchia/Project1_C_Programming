@@ -30,7 +30,7 @@ int get_amount(const char *prompt, double *amount)
     return 1;
 }
 
-/* Prints the menu at the start of every transaction. */
+/* Prints the available transaction options once at startup. */
 void show_menu(void)
 {
     printf("\n\n--------------------------------------------\n");
@@ -40,7 +40,6 @@ void show_menu(void)
     printf("  3) Check balance        4) Summary\n");
     printf("  5) Exit\n");
     printf("--------------------------------------------\n");
-    printf(" Select an option [1-5]: ");
 }
 
 int main(void)
@@ -51,20 +50,20 @@ int main(void)
     int choice, deposits = 0, withdrawals = 0;
 
     printf("\nWelcome to Mobile Money Services.\n");
+    show_menu();
 
     while (1) {
-        show_menu();
-
         /* Reject letters and other non-numeric choices. */
+        printf("\nEnter choice: ");
         if (scanf("%d", &choice) != 1) {
-            printf("\n[!] Invalid input. Enter a number from 1 to 5.\n");
+            printf("Invalid input. Please enter a number from 1 to 5.\n");
             clear_input();
             continue;
         }
 
         /* Exit before entering the transaction switch. */
         if (choice == 5) {
-            printf("\nThank you for using Mobile Money Services.\n");
+            printf("System terminated.\n");
             break;
         }
 
@@ -76,8 +75,8 @@ int main(void)
 
             balance += amount;
             deposits++;
-            printf("\n[OK] Deposit successful.\n");
-            printf("     New balance: %.0f RWF\n", balance);
+            printf("Deposit successful.\n");
+            printf("Current balance: %.0f RWF\n", balance);
             break;
 
         case 2:
@@ -85,28 +84,27 @@ int main(void)
                 continue;
 
             if (amount > balance) {
-                printf("\n[!] Transaction rejected: insufficient balance.\n");
+                printf("Transaction rejected: Insufficient balance.\n");
                 continue;
             }
 
             balance -= amount;
             withdrawals++;
-            printf("\n[OK] Withdrawal successful.\n");
-            printf("     New balance: %.0f RWF\n", balance);
+            printf("Withdrawal successful.\n");
+            printf("Current balance: %.0f RWF\n", balance);
             break;
 
         case 3:
-            printf("\n[INFO] Current balance: %.0f RWF\n", balance);
+            printf("Current balance: %.0f RWF\n", balance);
             break;
 
         case 4:
-            printf("\n[SUMMARY]\n");
-            printf(" Deposits    : %d\n", deposits);
-            printf(" Withdrawals : %d\n", withdrawals);
+            printf("Successful deposits   : %d\n", deposits);
+            printf("Successful withdrawals: %d\n", withdrawals);
             break;
 
         default:
-            printf("\n[!] Invalid choice. Select an option from 1 to 5.\n");
+            printf("Invalid choice. Please select 1 to 5.\n");
             break;
         }
     }
