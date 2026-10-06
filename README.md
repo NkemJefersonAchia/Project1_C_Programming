@@ -48,11 +48,11 @@ gcc -Wall -Wextra -std=c11 Question1_Water_Quality_Monitor/q1_water_quality.c -o
 ./q1
 
 # Question 2
-gcc -Wall -Wextra Question2_Mobile_Money_System/q2_mobile_money.c -o q2
+gcc -Wall -Wextra -std=c11 Question2_Mobile_Money_System/q2_mobile_money.c -o q2
 ./q2
 
 # Question 3
-gcc -Wall -Wextra Question3_Delivery_Distance_Analysis/q3_delivery.c -o q3
+gcc -Wall -Wextra -std=c11 Question3_Delivery_Distance_Analysis/q3_delivery.c -o q3
 ./q3
 ```
 
@@ -60,9 +60,13 @@ All three programs read from standard input, so you can also feed them a
 scripted run instead of typing:
 
 ```bash
-printf '29.5\n18\n' | ./q1                      # temperature, turbidity
-printf '6\n12 25 18 40 15 30\n20\n' | ./q3      # N, distances, limit
+printf '29.5\n18\n' | ./q1                        # temperature, turbidity
+printf '1\n50000\n3\n5\n' | ./q2                 # deposit, check balance, exit
+printf '6\n12\n25\n18\n40\n15\n30\n20\n' | ./q3   # N, one distance per line, limit
 ```
+
+Question 3 asks for each distance on its own prompt, so the scripted version
+needs one value per line rather than a single space-separated line.
 
 ## Toolchain
 
