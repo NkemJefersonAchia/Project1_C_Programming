@@ -3,7 +3,7 @@
 **Points:** 3
 
 A water-quality monitoring device reads a temperature sensor (°C) and a
-turbidity sensor (NTU), calculates a quality index, and prints a formatted
+turbidity sensor (NTU), calculates a quality index, and displays a formatted
 report with the water-quality status.
 
 ```
@@ -18,7 +18,7 @@ Classification: **Good** if Index >= 80, **Warning** if Index >= 60 and < 80,
 
 ## Deliverable 1 — Complete C source code
 
-[`q1_water_quality.c`](q1_water_quality.c) — 37 lines, two functions besides
+[`q1_water_quality.c`](q1_water_quality.c) — 64 lines, three functions besides
 `main()`.
 
 | Requirement | Where it's done |
@@ -26,8 +26,19 @@ Classification: **Good** if Index >= 80, **Warning** if Index >= 60 and < 80,
 | Declares variables for temperature (°C) and turbidity (NTU) | `float temperature, turbidity;` in `main()` |
 | Calculates the index with the given formula | `calculate_index()` |
 | Classifies Good / Warning / Critical | `classify()` |
-| Prints a formatted report with readings, index and status | The `printf` block in `main()` |
-| Uses at least one function other than `main()` | Two: `calculate_index()` and `classify()` |
+| Prints a formatted report with readings, index and status | The report block in `main()` |
+| Uses at least one function other than `main()` | Three: `calculate_index()`, `classify()` and `read_value()` |
+
+| Function | Returns | Job |
+|----------|---------|-----|
+| `calculate_index(temperature, turbidity)` | `float` | Applies the index formula to the two readings |
+| `classify(index)` | `const char *` | Maps the index onto "Good", "Warning" or "Critical" |
+| `read_value(prompt, value)` | `int` | Prompts for one reading and returns 0 if the input was not a number |
+| `main()` | `int` | Collects both readings, calls the functions, prints the report |
+
+`read_value()` means the program never calculates an index from a value that
+was never successfully read — on bad input it reports the problem and exits
+with status 1 instead.
 
 ### Build and run
 
@@ -41,16 +52,26 @@ warnings** under `-Wall -Wextra`.
 
 ## Deliverable 2 — Sample output from one test run
 
+Readings of 29.5 °C and 18 NTU:
+
 ```
-Enter temperature (C): 29.5
-Enter turbidity (NTU): 18
+--------------------------------------------
+        WATER QUALITY MONITOR
+--------------------------------------------
+Enter the latest sensor readings below.
 
-===== WATER QUALITY MONITORING REPORT =====
+ Temperature (C)  : 29.5
+ Turbidity (NTU)  : 18
 
-Temperature : 29.50 C
-Turbidity   : 18.00 NTU
-Index       : 86.50
-Status      : Good
+
+============================================
+          WATER QUALITY REPORT
+============================================
+ Temperature  :    29.50 C
+ Turbidity    :    18.00 NTU
+ Quality index:    86.50
+ Status       :     Good
+============================================
 ```
 
 Checking by hand: deviation = |29.5 − 25| = 4.5, penalty = 18 / 2 = 9, so the
@@ -61,17 +82,26 @@ index is 100 − 13.5 = 86.5. That is at or above 80, so **Good**.
 The run above only reaches the Good band, so I ran the program again with other
 readings, including exactly on both boundaries:
 
-| Temperature | Turbidity | Index | Status | What it checks |
-|---|---|---|---|---|
-| 29.5 °C | 18 NTU | 86.50 | Good | the sample run above |
-| 30 °C | 30 NTU | 80.00 | Good | lower edge of Good |
-| 32 °C | 40 NTU | 73.00 | Warning | inside Warning |
-| 35 °C | 60 NTU | 60.00 | Warning | lower edge of Warning |
-| 40 °C | 70 NTU | 50.00 | Critical | below 60 |
+| Temperature | Turbidity | Deviation | Penalty | Index | Status | What it checks |
+|---|---|---|---|---|---|---|
+| 29.5 °C | 18 NTU | 4.5 | 9.0 | 86.50 | Good | the sample run above |
+| 30 °C | 30 NTU | 5.0 | 15.0 | 80.00 | Good | lower edge of Good |
+| 32 °C | 40 NTU | 7.0 | 20.0 | 73.00 | Warning | inside Warning |
+| 35 °C | 60 NTU | 10.0 | 30.0 | 60.00 | Warning | lower edge of Warning |
+| 40 °C | 70 NTU | 15.0 | 35.0 | 50.00 | Critical | below 60 |
 
 The boundary rows matter most. The spec says Index **>= 80** is Good and
 **>= 60** is Warning, so exactly 80.00 has to come out Good and exactly 60.00
 has to come out Warning. Both do, because `classify()` uses `>=` and not `>`.
+
+Typing something that isn't a number is rejected rather than being used as a
+reading:
+
+```
+ Temperature (C)  : abc
+
+[!] Invalid reading. Please enter a number.
+```
 
 ## Deliverable 3 — Short technical explanation
 
@@ -98,8 +128,8 @@ which makes it the default language for embedded work.
 
 ```
 $ gcc -Wall -Wextra -std=c11 syn.c -o q1 -lm
-syn.c:20:33: error: expected ';' at end of declaration
-   20 |     float temperature, turbidity
+syn.c:37:33: error: expected ';' at end of declaration
+   37 |     float temperature, turbidity
       |                                 ^
       |                                 ;
 1 error generated.
@@ -150,11 +180,11 @@ one separately to see the file it produces:
 Measured on each output:
 
 ```
-stage 0  source        :   37 lines
-stage 1  q1.i   (-E)   : 1059 lines      <- headers pasted in
-stage 2  q1.s   (-S)   :  184 lines of assembly
-stage 3  q1.o   (-c)   : 1984 bytes object file
-stage 4  q1     (link) : 8576 bytes executable
+stage 0  source        :   64 lines
+stage 1  q1.i   (-E)   : 1086 lines      <- headers pasted in
+stage 2  q1.s   (-S)   :  273 lines of assembly
+stage 3  q1.o   (-c)   : 2720 bytes object file
+stage 4  q1     (link) : 8624 bytes executable
 ```
 
 The placeholder point in stage 3 is easy to confirm — `nm -u` lists what an
