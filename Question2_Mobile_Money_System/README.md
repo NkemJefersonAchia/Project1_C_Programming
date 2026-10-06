@@ -3,17 +3,24 @@
 **Points:** 4
 
 A transaction processing system for a mobile-money agent. The agent keeps
-processing deposits, withdrawals and balance checks in one session until they
-choose Exit. Every amount is validated before it touches the balance.
+processing deposits, withdrawals, balance checks and summaries in one session
+until they choose Exit. Every amount is validated before it is allowed to
+change the balance.
 
 ## Deliverable 1 — Complete C source code
 
 [`q2_mobile_money.c`](q2_mobile_money.c)
 
-Two small helpers keep `main()` readable: `clear_input()` empties leftover
-characters after a bad entry, and `get_amount()` prompts for an amount and
-rejects anything that is not a positive number — so the deposit and withdrawal
-cases don't repeat the same checks.
+Three helpers keep `main()` readable:
+
+| Function | Returns | Job |
+|----------|---------|-----|
+| `clear_input()` | `void` | Discards the rest of a bad input line |
+| `get_amount(prompt, amount)` | `int` | Prompts for an amount and rejects anything that is not a positive number |
+| `show_menu()` | `void` | Redraws the menu before each transaction |
+
+`get_amount()` is called by both the deposit and the withdrawal case, so
+neither has to repeat the same two checks.
 
 | Requirement | Where it's done |
 |---|---|
@@ -28,7 +35,7 @@ cases don't repeat the same checks.
 | `continue` to return to the menu on invalid input | Every rejection path — bad number, non-positive amount, insufficient funds |
 | `break` to terminate a loop or control-flow structure | Both: ends each `switch` case, and exits the `while` loop on Exit |
 | Prevent negative amounts and over-withdrawal | `get_amount()` plus the balance check in `case 2` |
-| Clear messages for success and failure | `"... successful."` and `"Transaction rejected: ..."` |
+| Clear messages for success and failure | Tagged `[OK]`, `[!]`, `[INFO]` and `[SUMMARY]` |
 | Run until the agent explicitly selects Exit | Only `choice == 5` breaks the loop |
 
 ### Build and run
@@ -42,58 +49,134 @@ Compiles with **zero warnings** under `-Wall -Wextra`.
 
 ## Deliverable 2 — Sample input/output
 
-This run covers all five menu options plus four invalid cases: a withdrawal
+This session covers all five menu options plus four invalid cases: a withdrawal
 larger than the balance, a negative amount, letters instead of a number, and a
 menu choice that doesn't exist.
 
 ```
-===== MOBILE MONEY TRANSACTION SYSTEM =====
 
-1. Deposit
-2. Withdraw
-3. Check Balance
-4. Transaction Summary
-5. Exit
+Welcome to Mobile Money Services.
 
-Enter choice: 1
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 1
 Enter deposit amount: 50000
-Deposit successful.
-Current balance: 50000 RWF
 
-Enter choice: 2
+[OK] Deposit successful.
+     New balance: 50000 RWF
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 2
 Enter withdrawal amount: 70000
-Transaction rejected: insufficient balance.
 
-Enter choice: 2
+[!] Transaction rejected: insufficient balance.
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 2
 Enter withdrawal amount: -500
 Transaction rejected: amount must be greater than zero.
 
-Enter choice: abc
-Invalid input. Please enter a number from 1 to 5.
 
-Enter choice: 2
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: abc
+
+[!] Invalid input. Enter a number from 1 to 5.
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 2
 Enter withdrawal amount: 20000
-Withdrawal successful.
-Current balance: 30000 RWF
 
-Enter choice: 3
-Current balance: 30000 RWF
+[OK] Withdrawal successful.
+     New balance: 30000 RWF
 
-Enter choice: 4
-Successful deposits   : 1
-Successful withdrawals: 1
 
-Enter choice: 9
-Invalid choice. Please select 1 to 5.
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 3
 
-Enter choice: 5
-System terminated.
+[INFO] Current balance: 30000 RWF
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 4
+
+[SUMMARY]
+ Deposits    : 1
+ Withdrawals : 1
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 9
+
+[!] Invalid choice. Select an option from 1 to 5.
+
+
+--------------------------------------------
+       MOBILE MONEY TRANSACTION SYSTEM
+--------------------------------------------
+  1) Deposit              2) Withdraw
+  3) Check balance        4) Summary
+  5) Exit
+--------------------------------------------
+ Select an option [1-5]: 5
+
+Thank you for using Mobile Money Services.
 ```
 
 The summary reports 1 deposit and 1 withdrawal, not 1 and 3 — the two rejected
 withdrawals never reached the counter. That is the `continue` doing its job.
 
-To reproduce the run without typing:
+To replay the same session without typing:
 
 ```bash
 printf '1\n50000\n2\n70000\n2\n-500\nabc\n2\n20000\n3\n4\n9\n5\n' | ./q2
@@ -104,9 +187,9 @@ printf '1\n50000\n2\n70000\n2\n-500\nabc\n2\n20000\n3\n4\n9\n5\n' | ./q2
 | Input | Expected | Result |
 |-------|----------|--------|
 | Withdraw exactly the full balance (5000 from 5000) | Allowed, balance goes to 0 | Pass |
-| Deposit of `0` | Rejected | Pass |
+| Deposit of `0` | Rejected, counter stays at 0 | Pass |
 | Withdrawal larger than the balance | Rejected | Pass |
-| Negative amount on deposit or withdrawal | Rejected | Pass |
+| Negative amount on deposit or withdrawal | Rejected, counter stays at 0 | Pass |
 | Letters at the choice prompt | Rejected, buffer cleared, menu reappears | Pass |
 | Letters at the amount prompt | Rejected, buffer cleared, no infinite loop | Pass |
 | Menu choice `0`, `-3` or `9` | Rejected by the `default` case | Pass |
@@ -135,15 +218,16 @@ every check passes.
 ### The loop
 
 A `while (1)` wraps the whole menu so the agent can run as many transactions as
-they like without restarting. The only way out is the Exit branch, so the
-session continues until the agent explicitly chooses it.
+they like without restarting. `show_menu()` redraws the options at the top of
+every pass, so the agent always sees what is available. The only way out is the
+Exit branch, so the session continues until the agent explicitly chooses it.
 
 ### `continue`
 
 Whenever input is bad — letters typed, a non-positive amount, insufficient
 funds — the program explains why and hits `continue`. That skips the rest of
-the loop body and jumps straight back to "Enter choice", so a rejected
-transaction can never change the balance or bump a counter.
+the loop body and jumps straight back to the menu, so a rejected transaction
+can never change the balance or bump a counter.
 
 When `scanf` fails, `clear_input()` empties the leftover characters first.
 Without it, `scanf` would leave the bad text in the buffer and read the same
