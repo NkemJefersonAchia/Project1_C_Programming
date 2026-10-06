@@ -118,13 +118,14 @@ Required data flow: **Ultrasonic Sensor → Arduino Uno → Decision/Processing 
 Key settings:
 
 ```c
-const int TRIG_PIN   = 9;
-const int ECHO_PIN   = 10;
-const int GREEN_LED  = 4;
-const int RED_LED    = 5;
+// HC-SR04 sensor and parking indicators.
+const int TRIG_PIN = 9;
+const int ECHO_PIN = 10;
+const int GREEN_LED = 4;
+const int RED_LED = 5;
 const int BUZZER_PIN = 6;
 
-const int THRESHOLD_CM = 50;   // anything closer than this counts as a parked car
+const int THRESHOLD_CM = 50;
 ```
 
 ## Deliverable 4 — Simulation test cases
