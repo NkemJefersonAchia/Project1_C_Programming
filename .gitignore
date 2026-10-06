@@ -1,0 +1,18 @@
+# compiled binaries
+q1
+q2
+q3
+q1_linked
+*.out
+a.out
+
+# intermediate files from the compilation-stage walkthrough
+*.i
+*.s
+*.o
+
+# macOS
+.DS_Store
+
+# debug bundles
+*.dSYM/

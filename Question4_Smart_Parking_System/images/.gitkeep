@@ -1,0 +1,7 @@
+Screenshots for Question 4 go in this folder:
+
+  tinkercad_circuit.png   - the full circuit as built in Tinkercad
+  test1_available.png     - Test 1: object far away, green LED lit
+  test2_occupied.png      - Test 2: object close, red LED lit and buzzer on
+
+The README in the parent folder already links to these three filenames.
