@@ -71,21 +71,20 @@ needs one value per line rather than a single space-separated line.
 ## Toolchain
 
 All three C programs were compiled with `gcc -Wall -Wextra` and produced **zero
-warnings**. The sample outputs in each README are copied from real runs, not
-typed by hand. Nothing in the programs is platform-specific, so they build the
-same way with gcc or clang on macOS, Linux or WSL.
+warnings**. Nothing in the programs is platform-specific, so they build the same
+way with gcc or clang on macOS, Linux or WSL.
 
 ## A note on the test runs
 
 Beyond the one sample run each question asks for, I also ran every program
 against its edge cases — both water-quality band boundaries (an index of
 exactly 80 and exactly 60), a withdrawal equal to the whole balance, a
-single-element array, and inputs that should be rejected outright. Those
-results are written up in the individual READMEs so the behaviour is
-documented rather than just claimed.
+single-element array, and inputs that should be rejected outright.
 
-Each question's README also opens with a table mapping every requirement in
-the question statement to the exact place in the code where it is handled.
+The README in each question folder gives a short description of what that
+program does. The full write-up for every question — sample runs, the technical
+explanations, the circuit diagrams and the test cases — is in the project
+document submitted alongside this repository.
 
 The programs are deliberately short. Each function does one job, takes what it
 needs as parameters and returns a value, and comments are only there where the
