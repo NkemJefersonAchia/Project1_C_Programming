@@ -74,18 +74,4 @@ All three C programs were compiled with `gcc -Wall -Wextra` and produced **zero
 warnings**. Nothing in the programs is platform-specific, so they build the same
 way with gcc or clang on macOS, Linux or WSL.
 
-## A note on the test runs
 
-Beyond the one sample run each question asks for, I also ran every program
-against its edge cases — both water-quality band boundaries (an index of
-exactly 80 and exactly 60), a withdrawal equal to the whole balance, a
-single-element array, and inputs that should be rejected outright.
-
-The README in each question folder gives a short description of what that
-program does. The full write-up for every question — sample runs, the technical
-explanations, the circuit diagrams and the test cases — is in the project
-document submitted alongside this repository.
-
-The programs are deliberately short. Each function does one job, takes what it
-needs as parameters and returns a value, and comments are only there where the
-reason for a line isn't obvious from the line itself.
