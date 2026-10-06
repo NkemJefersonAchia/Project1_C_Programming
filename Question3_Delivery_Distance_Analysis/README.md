@@ -20,8 +20,8 @@ routes.
 | Function: count routes above a specified limit | `count_above()` |
 | Recursive function that sums the distances | `recursive_sum()` |
 | Reuse — a function used inside another calculation | `average_distance()` calls `total_distance()` instead of re-looping |
-| Reuse — a function called more than once with different arguments | `count_above()` is called with the user's limit, then again with the average |
-| Displays the calculated results clearly | The report block in `main()` |
+| Reuse — a function called more than once with different arguments | `count_above()` is called with the agent's limit, then again with the average |
+| Displays the calculated results clearly | The bordered report block in `main()` |
 | Recursion: clear base case | `if (n == 0) return 0;` |
 | Recursion: reduces the problem on every call | Each call passes `n - 1` |
 | Recursion: returns the result to the caller | `return distances[n - 1] + recursive_sum(distances, n - 1);` |
@@ -37,45 +37,67 @@ Compiles with **zero warnings** under `-Wall -Wextra`.
 
 ## Deliverable 2 — Sample input/output
 
-```
-Number of routes: 6
-Distances: 12 25 18 40 15 30
-Distance limit: 20
+Six routes of 12, 25, 18, 40, 15 and 30 km with a 20 km limit — the example
+from the brief:
 
-===== DELIVERY DISTANCE ANALYSIS =====
-
-Total distance: 140 km
-Average distance: 23.33 km
-Longest route: 40 km
-Routes above 20 km: 3
-
-Recursive sum: 140 km
-
-Routes above average (23 km): 3
 ```
 
-The first block reproduces the expected output in the brief line for line. The
-last line is the function-reuse demonstration, kept below the required block so
-the required format stays intact. Both the loop total and the recursive total
-come to 140 km.
+--------------------------------------------
+        DELIVERY DISTANCE ANALYSIS
+--------------------------------------------
+Enter the route information below.
 
-To reproduce the run without typing:
+ Number of routes [1-100]: 6
+
+ Enter the distance for each route in km.
+ Route 1 distance (km): 12
+ Route 2 distance (km): 25
+ Route 3 distance (km): 18
+ Route 4 distance (km): 40
+ Route 5 distance (km): 15
+ Route 6 distance (km): 30
+
+ Distance limit (km): 20
+
+
+============================================
+          DELIVERY ANALYSIS REPORT
+============================================
+ Total distance       :      140 km
+ Average distance     :    23.33 km
+ Longest route        :       40 km
+ Recursive total      :      140 km
+ Above limit count    :        3 (over 20 km)
+ Above average count  :        3 (over 23 km)
+============================================
+```
+
+Every figure matches the brief: total 140 km, average 23.33 km, longest 40 km,
+and 3 routes above 20 km. The recursive total comes to the same 140 km as the
+loop-based total, which is the cross-check that the recursion is correct.
+
+The report groups the two counts at the bottom so the limit used for each one
+is printed beside it — the agent's 20 km limit, then the computed 23 km
+average. Each distance is asked for on its own numbered prompt, which makes a
+long list of routes much harder to mistype than one space-separated line.
+
+To replay the same run without typing:
 
 ```bash
-printf '6\n12 25 18 40 15 30\n20\n' | ./q3
+printf '6\n12\n25\n18\n40\n15\n30\n20\n' | ./q3
 ```
 
 ### Extra test cases
 
 | Input | Expected | Result |
 |-------|----------|--------|
-| `1` route of `42` km, limit `20` | Total 42, average 42.00, longest 42, 1 above limit, recursive sum 42 | Pass |
+| `1` route of `42` km, limit `20` | Total 42, average 42.00, longest 42, recursive total 42, 1 above limit, 0 above average | Pass |
 | `4` routes of `20 20 20 20`, limit `20` | 0 routes above limit — the check is strictly greater | Pass |
-| `0` routes | Rejected with a message, exits with status 1 | Pass |
-| `101` routes (above `MAX_ROUTES`) | Rejected with a message, exits with status 1 | Pass |
+| `0` routes | Rejected with `[!] Enter between 1 and 100 routes.`, exits with status 1 | Pass |
+| `101` routes (above `MAX_ROUTES`) | Rejected the same way, exits with status 1 | Pass |
 
 The `n < 1` guard matters because `longest_route()` reads `distances[0]`
-immediately, and `average_distance()` divides by `n` — with an empty array both
+immediately and `average_distance()` divides by `n` — with an empty array both
 would misbehave. The upper guard stops the input loop writing past the end of
 the array.
 
@@ -102,11 +124,16 @@ Function reuse shows up twice:
    agent's 20 km limit, and once with the computed average of 23 km, which
    tells the company how many routes are longer than typical.
 
+`main()` also computes the total and the average once into local variables and
+reuses them across the report lines, rather than calling the functions again
+for every line that needs the value.
+
 ## Deliverable 4 — How the recursive function works
 
 ```c
 int recursive_sum(int distances[], int n)
 {
+    /* Stop when every route has been included. */
     if (n == 0)
         return 0;
 
