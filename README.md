@@ -13,7 +13,7 @@ what that program does.
 > sample runs, the real-world application of C, the syntax-versus-semantic
 > error analysis, the compilation lifecycle, the function and recursion
 > explanations, the circuit and block diagrams, and the simulation test cases —
-> are in the project report, `Project1_Nkem_Jeferson_Achia.pdf`, submitted with
+> are in the project report, `Formative_Project 1 Assignment_Programming in C_Cohort 1_Nkem Jeferson Achia.pdf`, submitted with
 > this assignment. The READMEs in this repository describe the code only; they
 > do not repeat the report.
 
@@ -120,9 +120,7 @@ Question 4 is an Arduino sketch and is not compiled with `gcc`. To run it:
 
 1. Open [Tinkercad Circuits](https://www.tinkercad.com/circuits) and create a
    new circuit.
-2. Build the circuit: an Arduino Uno, an HC-SR04 ultrasonic sensor, a green and
-   a red LED each with a 220 Ω resistor, and a piezo buzzer. The full
-   connection list and wiring diagram are in the report.
+2. Use the link in the report to get access to the circuit diagram
 3. Open the code editor, switch it to **Text** mode, and paste in the contents
    of [`q4_parking.ino`](Question4_Smart_Parking_System/q4_parking.ino).
 4. Click **Start Simulation**, then open the **Serial Monitor** to watch the
